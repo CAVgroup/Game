@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pixel Survival: Wasteland</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Courier New', monospace;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #statsPanel {
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-bottom: 2px solid #444;
+        }
+        
+        #actionPanel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        
+        #gameLog {
+            flex-grow: 1;
+            background-color: #222;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-y: scroll;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 12px;
+            margin: 5px 0;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .btn:active {
+            background-color: #444;
+        }
+        
+        #settingsPanel {
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-top: 2px solid #444;
+        }
+        
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        
+        .toggle-label {
+            font-size: 14px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="statsPanel">
+            <div>Health: <span id="healthValue">100</span></div>
+            <div>Hunger: <span id="hungerValue">100</span></div>
+            <div>Water: <span id="waterValue">100</span></div>
+            <div>Wood: <span id="woodValue">0</span></div>
+        </div>
+        
+        <div id="actionPanel">
+            <div id="gameLog">Welcome to Pixel Survival! Gather resources to stay alive.</div>
+            <button class="btn" id="chopWoodBtn">Chop Wood</button>
+            <button class="btn" id="drinkBtn">Drink Water</button>
+            <button class="btn" id="restBtn">Rest</button>
+            <button class="btn" id="exploreBtn">Explore</button>
+        </div>
+        
+        <div id="settingsPanel">
+            <div class="toggle-container">
+                <span class="toggle-label">Data Saver</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dataSaverToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-container">
+                <span class="toggle-label">Low Graphics</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="lowGraphicsToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            health: 100,
+            hunger: 100,
+            water: 100,
+            wood: 0,
+            day: 1,
+            dataSaverEnabled: true,
+            lowGraphicsMode: false
+        };
+
+        // DOM Elements
+        const healthValue = document.getElementById('healthValue');
+        const hungerValue = document.getElementById('hungerValue');
+        const waterValue = document.getElementById('waterValue');
+        const woodValue = document.getElementById('woodValue');
+        const gameLog = document.getElementById('gameLog');
+        const dataSaverToggle = document.getElementById('dataSaverToggle');
+        const lowGraphicsToggle = document.getElementById('lowGraphicsToggle');
+
+        // Initialize
+        function init() {
+            loadGame();
+            updateUI();
+            
+            // Set up event listeners
+            document.getElementById('chopWoodBtn').addEventListener('click', chopWood);
+            document.getElementById('drinkBtn').addEventListener('click', drink);
+            document.getElementById('restBtn').addEventListener('click', rest);
+            document.getElementById('exploreBtn').addEventListener('click', explore);
+            
+            dataSaverToggle.addEventListener('change', toggleDataSaver);
+            lowGraphicsToggle.addEventListener('change', toggleLowGraphics);
+            
+            // Set initial toggle states
+            dataSaverToggle.checked = gameState.dataSaverEnabled;
+            lowGraphicsToggle.checked = gameState.lowGraphicsMode;
+            
+            // Start game loop
+            setInterval(gameLoop, 10000); // Every 10 seconds
+        }
+
+        // Main Game Loop
+        function gameLoop() {
+            // Stat decay
+            gameState.hunger = Math.max(0, gameState.hunger - 5);
+            gameState.water = Math.max(0, gameState.water - 3);
+            
+            // Health effects
+            if (gameState.hunger <= 0 || gameState.water <= 0) {
+                gameState.health = Math.max(0, gameState.health - 10);
+                addToLog("You're starving or dehydrated!");
+            }
+            
+            // Day cycle
+            gameState.day++;
+            
+            // Check for death
+            if (gameState.health <= 0) {
+                gameOver();
+            }
+            
+            updateUI();
+            saveGame();
+        }
+
+        // Game Actions
+        function chopWood() {
+            const woodGained = Math.floor(Math.random() * 3) + 1;
+            gameState.wood += woodGained;
+            gameState.hunger = Math.max(0, gameState.hunger - 2);
+            addToLog(`Chopped wood! +${woodGained} wood`);
+            updateUI();
+            saveGame();
+        }
+
+        function drink() {
+            if (gameState.water < 80) {
+                gameState.water = Math.min(100, gameState.water + 20);
+                addToLog("Drank water! +20 water");
+                updateUI();
+                saveGame();
+            } else {
+                addToLog("Not thirsty right now");
+            }
+        }
+
+        function rest() {
+            gameState.health = Math.min(100, gameState.health + 15);
+            addToLog("Rested! +15 health");
+            updateUI();
+            saveGame();
+        }
+
+        function explore() {
+            const events = [
+                { text: "Found a berry bush! +10 hunger", effect: () => gameState.hunger = Math.min(100, gameState.hunger + 10) },
+                { text: "Discovered a small pond! +20 water", effect: () => gameState.water = Math.min(100, gameState.water + 20) },
+                { text: "Got attacked by a wild animal! -15 health", effect: () => gameState.health = Math.max(0, gameState.health - 15) },
+                { text: "Found nothing interesting", effect: () => {} }
+            ];
+            
+            const randomEvent = events[Math.floor(Math.random() * events.length)];
+            randomEvent.effect();
+            addToLog(randomEvent.text);
+            updateUI();
+            saveGame();
+        }
+
+        // UI Functions
+        function updateUI() {
+            healthValue.textContent = gameState.health;
+            hungerValue.textContent = gameState.hunger;
+            waterValue.textContent = gameState.water;
+            woodValue.textContent = gameState.wood;
+            
+            // Visual feedback for critical stats
+            healthValue.style.color = gameState.health < 30 ? 'red' : 'white';
+            hungerValue.style.color = gameState.hunger < 30 ? 'red' : 'white';
+            waterValue.style.color = gameState.water < 30 ? 'red' : 'white';
+        }
+
+        function addToLog(message) {
+            const entry = document.createElement('div');
+            entry.textContent = `Day ${gameState.day}: ${message}`;
+            gameLog.insertBefore(entry, gameLog.firstChild);
+            
+            // Limit log entries
+            if (gameLog.children.length > 20) {
+                gameLog.removeChild(gameLog.lastChild);
+            }
+        }
+
+        // Settings
+        function toggleDataSaver() {
+            gameState.dataSaverEnabled = dataSaverToggle.checked;
+            if (gameState.dataSaverEnabled) {
+                saveGame();
+                addToLog("Data saver enabled");
+            } else {
+                addToLog("Data saver disabled");
+            }
+        }
+
+        function toggleLowGraphics() {
+            gameState.lowGraphicsMode = lowGraphicsToggle.checked;
+            document.body.style.backgroundColor = gameState.lowGraphicsMode ? '#111' : '#1a1a1a';
+            addToLog(`Low graphics ${gameState.lowGraphicsMode ? 'enabled' : 'disabled'}`);
+        }
+
+        // Data Management
+        function saveGame() {
+            if (!gameState.dataSaverEnabled) return;
+            
+            try {
+                localStorage.setItem('survivalSave', JSON.stringify(gameState));
+            } catch (e) {
+                console.error("Failed to save game:", e);
+            }
+        }
+
+        function loadGame() {
+            try {
+                const savedData = localStorage.getItem('survivalSave');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    Object.assign(gameState, parsedData);
+                    addToLog("Game loaded");
+                }
+            } catch (e) {
+                console.error("Failed to load game:", e);
+            }
+        }
+
+        // Game State
+        function gameOver() {
+            addToLog("GAME OVER! You didn't survive the wasteland.");
+            addToLog("Resetting game...");
+            
+            // Reset state but keep settings
+            const settings = {
+                dataSaverEnabled: gameState.dataSaverEnabled,
+                lowGraphicsMode: gameState.lowGraphicsMode
+            };
+            
+            Object.assign(gameState, {
+                health: 100,
+                hunger: 100,
+                water: 100,
+                wood: 0,
+                day: 1
+            });
+            
+            Object.assign(gameState, settings);
+            updateUI();
+            saveGame();
+        }
+
+        // Start the game
+        window.onload = init;
+    </script>
+</body>
+</html>

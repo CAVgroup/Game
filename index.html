@@ -17,30 +17,69 @@
             user-select: none;
             overflow: hidden;
         }
-
+        
         #gameContainer {
             width: 100vw;
-            height: calc(100vh - 60px);
+            height: 100vh;
             display: flex;
             flex-direction: column;
         }
-
-        #statsPanel {
+        
+        #header {
+            display: flex;
+            justify-content: space-between;
             padding: 10px;
             background-color: #2a2a2a;
             border-bottom: 2px solid #444;
         }
-
-        #actionPanel {
-            flex-grow: 1;
+        
+        #statsPanel {
             display: flex;
-            flex-direction: column;
-            padding: 10px;
-            overflow-y: auto;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-
-        #gameLog {
+        
+        .stat {
+            background-color: #333;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        #tabs {
+            display: flex;
+            background-color: #2a2a2a;
+            border-bottom: 2px solid #444;
+        }
+        
+        .tab {
+            padding: 12px 15px;
+            text-align: center;
+            flex: 1;
+            border-right: 1px solid #444;
+        }
+        
+        .tab.active {
+            background-color: #333;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        #contentArea {
             flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .tabContent {
+            display: none;
+        }
+        
+        .tabContent.active {
+            display: block;
+        }
+        
+        #gameLog {
+            height: 120px;
             background-color: #222;
             border: 1px solid #444;
             padding: 10px;
@@ -48,7 +87,7 @@
             overflow-y: scroll;
             font-size: 14px;
         }
-
+        
         .btn {
             background-color: #333;
             color: white;
@@ -58,41 +97,70 @@
             text-align: center;
             border-radius: 4px;
             font-size: 16px;
+            width: 100%;
         }
-
+        
         .btn:active {
             background-color: #444;
         }
-
-        #settingsPanel {
-            padding: 10px;
-            background-color: #2a2a2a;
-            border-top: 2px solid #444;
+        
+        .btn-craft {
+            background-color: #3a5a78;
         }
-
+        
+        #inventoryGrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .itemSlot {
+            background-color: #333;
+            border: 1px solid #555;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .itemCount {
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .craftingRecipe {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+        }
+        
         .toggle-container {
             display: flex;
             justify-content: space-between;
-            margin: 5px 0;
+            margin: 10px 0;
         }
-
+        
         .toggle-label {
             font-size: 14px;
         }
-
+        
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 50px;
             height: 24px;
         }
-
+        
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-
+        
         .slider {
             position: absolute;
             cursor: pointer;
@@ -104,7 +172,7 @@
             transition: .4s;
             border-radius: 24px;
         }
-
+        
         .slider:before {
             position: absolute;
             content: "";
@@ -116,126 +184,274 @@
             transition: .4s;
             border-radius: 50%;
         }
-
+        
         input:checked + .slider {
             background-color: #4CAF50;
         }
-
+        
         input:checked + .slider:before {
             transform: translateX(26px);
         }
-
-        #adBanner {
-            height: 60px;
-            background-color: #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-top: 2px solid #333;
+        
+        .critical {
+            color: #ff5555;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .recipe-ingredients {
+            font-size: 12px;
+            color: #aaa;
+            margin: 5px 0;
+        }
+        
+        .recipe-result {
+            font-size: 14px;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="statsPanel">
-            <div>Health: <span id="healthValue">100</span></div>
-            <div>Hunger: <span id="hungerValue">100</span></div>
-            <div>Water: <span id="waterValue">100</span></div>
-            <div>Wood: <span id="woodValue">0</span></div>
-        </div>
-
-        <div id="actionPanel">
-            <div id="gameLog">Welcome to Pixel Survival! Gather resources to stay alive.</div>
-            <button class="btn" id="chopWoodBtn">Chop Wood</button>
-            <button class="btn" id="drinkBtn">Drink Water</button>
-            <button class="btn" id="restBtn">Rest</button>
-            <button class="btn" id="exploreBtn">Explore</button>
-        </div>
-
-        <div id="settingsPanel">
-            <div class="toggle-container">
-                <span class="toggle-label">Data Saver</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="dataSaverToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="toggle-container">
-                <span class="toggle-label">Low Graphics</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="lowGraphicsToggle">
-                    <span class="slider"></span>
-                </label>
+        <div id="header">
+            <div id="statsPanel">
+                <div class="stat">Day: <span id="dayValue">1</span></div>
+                <div class="stat">Health: <span id="healthValue">100</span></div>
+                <div class="stat">Hunger: <span id="hungerValue">100</span></div>
+                <div class="stat">Water: <span id="waterValue">100</span></div>
             </div>
         </div>
-    </div>
-
-    <!-- Median.co Ad Banner -->
-    <div id="adBanner">
-        <script src="https://median.co/snippet.js" data-id="YOUR-MEDIAN-ID" async></script>
+        
+        <div id="tabs">
+            <div class="tab active" data-tab="actions">Actions</div>
+            <div class="tab" data-tab="inventory">Inventory</div>
+            <div class="tab" data-tab="crafting">Crafting</div>
+            <div class="tab" data-tab="settings">Settings</div>
+        </div>
+        
+        <div id="contentArea">
+            <!-- Actions Tab -->
+            <div id="actions" class="tabContent active">
+                <div id="gameLog">Welcome to Pixel Survival! Gather resources to stay alive.</div>
+                <button class="btn" id="chopWoodBtn">Chop Wood</button>
+                <button class="btn" id="drinkBtn">Drink Water</button>
+                <button class="btn" id="restBtn">Rest</button>
+                <button class="btn" id="exploreBtn">Explore</button>
+                <button class="btn" id="mineStoneBtn">Mine Stone</button>
+                <button class="btn" id="forageBtn">Forage Food</button>
+                <button class="btn" id="eatBtn">Eat Food</button>
+            </div>
+            
+            <!-- Inventory Tab -->
+            <div id="inventory" class="tabContent">
+                <h3>Inventory</h3>
+                <div id="inventoryGrid">
+                    <!-- Filled by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Crafting Tab -->
+            <div id="crafting" class="tabContent">
+                <h3>Crafting Recipes</h3>
+                <div id="craftingRecipes">
+                    <!-- Filled by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings" class="tabContent">
+                <h3>Settings</h3>
+                <div class="toggle-container">
+                    <span class="toggle-label">Data Saver</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dataSaverToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Low Graphics</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="lowGraphicsToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Animations</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="animationsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="btn" id="resetBtn">Reset Game</button>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Game State
         const gameState = {
             health: 100,
             hunger: 100,
             water: 100,
-            wood: 0,
             day: 1,
-            dataSaverEnabled: true,
-            lowGraphicsMode: false
+            inventory: {
+                wood: 0,
+                stone: 0,
+                food: 0,
+                rope: 0,
+                axe: 0,
+                pickaxe: 0,
+                campfire: 0
+            },
+            settings: {
+                dataSaver: true,
+                lowGraphics: false,
+                animations: true
+            },
+            unlockedRecipes: ['axe', 'campfire']
         };
 
-        const healthValue = document.getElementById('healthValue');
-        const hungerValue = document.getElementById('hungerValue');
-        const waterValue = document.getElementById('waterValue');
-        const woodValue = document.getElementById('woodValue');
-        const gameLog = document.getElementById('gameLog');
-        const dataSaverToggle = document.getElementById('dataSaverToggle');
-        const lowGraphicsToggle = document.getElementById('lowGraphicsToggle');
+        // Crafting Recipes
+        const craftingRecipes = {
+            axe: {
+                name: "Stone Axe",
+                description: "Better wood chopping efficiency",
+                ingredients: { wood: 3, stone: 2 },
+                result: { axe: 1 }
+            },
+            pickaxe: {
+                name: "Stone Pickaxe",
+                description: "Better stone mining efficiency",
+                ingredients: { wood: 2, stone: 3 },
+                result: { pickaxe: 1 }
+            },
+            campfire: {
+                name: "Campfire",
+                description: "Restores more health when resting",
+                ingredients: { wood: 5, stone: 3 },
+                result: { campfire: 1 }
+            },
+            rope: {
+                name: "Rope",
+                description: "Used for advanced crafting",
+                ingredients: { wood: 2 },
+                result: { rope: 1 }
+            }
+        };
 
+        // DOM Elements
+        const elements = {
+            health: document.getElementById('healthValue'),
+            hunger: document.getElementById('hungerValue'),
+            water: document.getElementById('waterValue'),
+            day: document.getElementById('dayValue'),
+            gameLog: document.getElementById('gameLog'),
+            inventoryGrid: document.getElementById('inventoryGrid'),
+            craftingRecipes: document.getElementById('craftingRecipes'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tabContent')
+        };
+
+        // Initialize
         function init() {
             loadGame();
             updateUI();
-
+            renderInventory();
+            renderCraftingRecipes();
+            
+            // Set up event listeners
             document.getElementById('chopWoodBtn').addEventListener('click', chopWood);
             document.getElementById('drinkBtn').addEventListener('click', drink);
             document.getElementById('restBtn').addEventListener('click', rest);
             document.getElementById('exploreBtn').addEventListener('click', explore);
-
-            dataSaverToggle.addEventListener('change', toggleDataSaver);
-            lowGraphicsToggle.addEventListener('change', toggleLowGraphics);
-
-            dataSaverToggle.checked = gameState.dataSaverEnabled;
-            lowGraphicsToggle.checked = gameState.lowGraphicsMode;
-
-            setInterval(gameLoop, 10000);
+            document.getElementById('mineStoneBtn').addEventListener('click', mineStone);
+            document.getElementById('forageBtn').addEventListener('click', forage);
+            document.getElementById('eatBtn').addEventListener('click', eat);
+            document.getElementById('resetBtn').addEventListener('click', resetGame);
+            
+            document.getElementById('dataSaverToggle').addEventListener('change', toggleDataSaver);
+            document.getElementById('lowGraphicsToggle').addEventListener('change', toggleLowGraphics);
+            document.getElementById('animationsToggle').addEventListener('change', toggleAnimations);
+            
+            // Set initial toggle states
+            document.getElementById('dataSaverToggle').checked = gameState.settings.dataSaver;
+            document.getElementById('lowGraphicsToggle').checked = gameState.settings.lowGraphics;
+            document.getElementById('animationsToggle').checked = gameState.settings.animations;
+            
+            // Tab switching
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+            
+            // Start game loop
+            setInterval(gameLoop, 10000); // Every 10 seconds
         }
 
+        // Main Game Loop
         function gameLoop() {
+            // Stat decay
             gameState.hunger = Math.max(0, gameState.hunger - 5);
             gameState.water = Math.max(0, gameState.water - 3);
-
+            
+            // Health effects
             if (gameState.hunger <= 0 || gameState.water <= 0) {
                 gameState.health = Math.max(0, gameState.health - 10);
                 addToLog("You're starving or dehydrated!");
             }
-
+            
+            // Day cycle
             gameState.day++;
-
+            
+            // Random events
+            if (Math.random() < 0.2) {
+                const events = [
+                    "A cool breeze blows through the wasteland.",
+                    "You hear strange noises in the distance.",
+                    "The sky looks particularly ominous today.",
+                    "You find some edible berries growing nearby."
+                ];
+                addToLog(events[Math.floor(Math.random() * events.length)]);
+            }
+            
+            // Check for death
             if (gameState.health <= 0) {
                 gameOver();
             }
-
+            
             updateUI();
             saveGame();
         }
 
+        // Game Actions
         function chopWood() {
-            const woodGained = Math.floor(Math.random() * 3) + 1;
-            gameState.wood += woodGained;
+            const efficiency = gameState.inventory.axe > 0 ? 2 : 1;
+            const woodGained = Math.floor(Math.random() * 3 * efficiency) + 1;
+            gameState.inventory.wood += woodGained;
             gameState.hunger = Math.max(0, gameState.hunger - 2);
             addToLog(`Chopped wood! +${woodGained} wood`);
+            updateUI();
+            saveGame();
+        }
+
+        function mineStone() {
+            const efficiency = gameState.inventory.pickaxe > 0 ? 2 : 1;
+            const stoneGained = Math.floor(Math.random() * 3 * efficiency) + 1;
+            gameState.inventory.stone += stoneGained;
+            gameState.hunger = Math.max(0, gameState.hunger - 3);
+            addToLog(`Mined stone! +${stoneGained} stone`);
+            updateUI();
+            saveGame();
+        }
+
+        function forage() {
+            const foodGained = Math.floor(Math.random() * 3) + 1;
+            gameState.inventory.food += foodGained;
+            addToLog(`Foraged food! +${foodGained} food`);
             updateUI();
             saveGame();
         }
@@ -251,21 +467,38 @@
             }
         }
 
+        function eat() {
+            if (gameState.inventory.food > 0) {
+                gameState.inventory.food--;
+                gameState.hunger = Math.min(100, gameState.hunger + 25);
+                addToLog("Ate food! +25 hunger");
+                updateUI();
+                saveGame();
+            } else {
+                addToLog("No food in inventory");
+            }
+        }
+
         function rest() {
-            gameState.health = Math.min(100, gameState.health + 15);
-            addToLog("Rested! +15 health");
+            const bonus = gameState.inventory.campfire > 0 ? 25 : 15;
+            gameState.health = Math.min(100, gameState.health + bonus);
+            addToLog(`Rested! +${bonus} health`);
             updateUI();
             saveGame();
         }
 
         function explore() {
             const events = [
-                { text: "Found a berry bush! +10 hunger", effect: () => gameState.hunger = Math.min(100, gameState.hunger + 10) },
+                { text: "Found a berry bush! +2 food", effect: () => gameState.inventory.food += 2 },
                 { text: "Discovered a small pond! +20 water", effect: () => gameState.water = Math.min(100, gameState.water + 20) },
                 { text: "Got attacked by a wild animal! -15 health", effect: () => gameState.health = Math.max(0, gameState.health - 15) },
+                { text: "Found an abandoned campsite! +3 wood, +2 stone", effect: () => {
+                    gameState.inventory.wood += 3;
+                    gameState.inventory.stone += 2;
+                }},
                 { text: "Found nothing interesting", effect: () => {} }
             ];
-
+            
             const randomEvent = events[Math.floor(Math.random() * events.length)];
             randomEvent.effect();
             addToLog(randomEvent.text);
@@ -273,30 +506,142 @@
             saveGame();
         }
 
-        function updateUI() {
-            healthValue.textContent = gameState.health;
-            hungerValue.textContent = gameState.hunger;
-            waterValue.textContent = gameState.water;
-            woodValue.textContent = gameState.wood;
+        // Crafting System
+        function craftItem(recipeName) {
+            const recipe = craftingRecipes[recipeName];
+            let canCraft = true;
+            
+            // Check ingredients
+            for (const [item, amount] of Object.entries(recipe.ingredients)) {
+                if (gameState.inventory[item] < amount) {
+                    canCraft = false;
+                    addToLog(`Not enough ${item} to craft ${recipe.name}`);
+                    break;
+                }
+            }
+            
+            if (canCraft) {
+                // Deduct ingredients
+                for (const [item, amount] of Object.entries(recipe.ingredients)) {
+                    gameState.inventory[item] -= amount;
+                }
+                
+                // Add results
+                for (const [item, amount] of Object.entries(recipe.result)) {
+                    gameState.inventory[item] += amount;
+                }
+                
+                addToLog(`Crafted ${recipe.name}!`);
+                
+                // Unlock new recipes if applicable
+                if (recipeName === 'axe' && !gameState.unlockedRecipes.includes('pickaxe')) {
+                    gameState.unlockedRecipes.push('pickaxe');
+                    addToLog("New recipe unlocked: Stone Pickaxe!");
+                }
+                
+                updateUI();
+                renderInventory();
+                renderCraftingRecipes();
+                saveGame();
+            }
+        }
 
-            healthValue.style.color = gameState.health < 30 ? 'red' : 'white';
-            hungerValue.style.color = gameState.hunger < 30 ? 'red' : 'white';
-            waterValue.style.color = gameState.water < 30 ? 'red' : 'white';
+        // UI Functions
+        function updateUI() {
+            elements.health.textContent = gameState.health;
+            elements.hunger.textContent = gameState.hunger;
+            elements.water.textContent = gameState.water;
+            elements.day.textContent = gameState.day;
+            
+            // Critical state indicators
+            elements.health.className = gameState.health < 30 ? 'critical' : '';
+            elements.hunger.className = gameState.hunger < 30 ? 'critical' : '';
+            elements.water.className = gameState.water < 30 ? 'critical' : '';
+        }
+
+        function renderInventory() {
+            elements.inventoryGrid.innerHTML = '';
+            
+            for (const [item, count] of Object.entries(gameState.inventory)) {
+                if (count > 0 || item === 'axe' || item === 'pickaxe' || item === 'campfire') {
+                    const slot = document.createElement('div');
+                    slot.className = 'itemSlot';
+                    slot.innerHTML = `
+                        <div>${item.charAt(0).toUpperCase() + item.slice(1)}</div>
+                        <div class="itemCount">${count}</div>
+                    `;
+                    elements.inventoryGrid.appendChild(slot);
+                }
+            }
+        }
+
+        function renderCraftingRecipes() {
+            elements.craftingRecipes.innerHTML = '';
+            
+            gameState.unlockedRecipes.forEach(recipeName => {
+                const recipe = craftingRecipes[recipeName];
+                const recipeElement = document.createElement('div');
+                recipeElement.className = 'craftingRecipe';
+                
+                // Create ingredients list
+                const ingredientsList = Object.entries(recipe.ingredients)
+                    .map(([item, amount]) => `${amount} ${item}`)
+                    .join(', ');
+                
+                // Create result text
+                const resultText = Object.entries(recipe.result)
+                    .map(([item, amount]) => `${amount} ${item}`)
+                    .join(', ');
+                
+                recipeElement.innerHTML = `
+                    <h4>${recipe.name}</h4>
+                    <p>${recipe.description}</p>
+                    <div class="recipe-ingredients">Requires: ${ingredientsList}</div>
+                    <div class="recipe-result">Creates: ${resultText}</div>
+                    <button class="btn btn-craft" data-recipe="${recipeName}">Craft</button>
+                `;
+                
+                elements.craftingRecipes.appendChild(recipeElement);
+            });
+            
+            // Add event listeners to craft buttons
+            document.querySelectorAll('.btn-craft').forEach(btn => {
+                btn.addEventListener('click', () => craftItem(btn.dataset.recipe));
+            });
         }
 
         function addToLog(message) {
             const entry = document.createElement('div');
             entry.textContent = `Day ${gameState.day}: ${message}`;
-            gameLog.insertBefore(entry, gameLog.firstChild);
-
-            if (gameLog.children.length > 20) {
-                gameLog.removeChild(gameLog.lastChild);
+            elements.gameLog.insertBefore(entry, elements.gameLog.firstChild);
+            
+            // Limit log entries
+            if (elements.gameLog.children.length > 20) {
+                elements.gameLog.removeChild(elements.gameLog.lastChild);
             }
         }
 
+        // Tab System
+        function switchTab(tabName) {
+            // Update tab visuals
+            elements.tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            // Update content visibility
+            elements.tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === tabName);
+            });
+            
+            // Refresh content if needed
+            if (tabName === 'inventory') renderInventory();
+            if (tabName === 'crafting') renderCraftingRecipes();
+        }
+
+        // Settings
         function toggleDataSaver() {
-            gameState.dataSaverEnabled = dataSaverToggle.checked;
-            if (gameState.dataSaverEnabled) {
+            gameState.settings.dataSaver = document.getElementById('dataSaverToggle').checked;
+            if (gameState.settings.dataSaver) {
                 saveGame();
                 addToLog("Data saver enabled");
             } else {
@@ -305,5 +650,93 @@
         }
 
         function toggleLowGraphics() {
-            gameState.lowGraphicsMode = lowGraphicsToggle.checked;
-            document.body.style.backgroundColor
+            gameState.settings.lowGraphics = document.getElementById('lowGraphicsToggle').checked;
+            document.body.style.backgroundColor = gameState.settings.lowGraphics ? '#111' : '#1a1a1a';
+            addToLog(`Low graphics ${gameState.settings.lowGraphics ? 'enabled' : 'disabled'}`);
+        }
+
+        function toggleAnimations() {
+            gameState.settings.animations = document.getElementById('animationsToggle').checked;
+            const criticalElements = document.querySelectorAll('.critical');
+            criticalElements.forEach(el => {
+                if (gameState.settings.animations) {
+                    el.style.animationPlayState = 'running';
+                } else {
+                    el.style.animationPlayState = 'paused';
+                }
+            });
+            addToLog(`Animations ${gameState.settings.animations ? 'enabled' : 'disabled'}`);
+        }
+
+        function resetGame() {
+            if (confirm("Are you sure you want to reset your game? All progress will be lost!")) {
+                localStorage.removeItem('survivalSave');
+                location.reload();
+            }
+        }
+
+        // Data Management
+        function saveGame() {
+            if (!gameState.settings.dataSaver) return;
+            
+            try {
+                localStorage.setItem('survivalSave', JSON.stringify(gameState));
+                console.log("Game saved");
+            } catch (e) {
+                console.error("Failed to save game:", e);
+                addToLog("Failed to save progress");
+            }
+        }
+
+        function loadGame() {
+            try {
+                const savedData = localStorage.getItem('survivalSave');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    Object.assign(gameState, parsedData);
+                    addToLog("Game loaded");
+                }
+            } catch (e) {
+                console.error("Failed to load game:", e);
+                addToLog("Failed to load saved game");
+            }
+        }
+
+        // Game State
+        function gameOver() {
+            addToLog("GAME OVER! You didn't survive the wasteland.");
+            addToLog("Resetting game...");
+            
+            // Reset state but keep settings
+            const settings = {
+                settings: gameState.settings,
+                unlockedRecipes: gameState.unlockedRecipes
+            };
+            
+            Object.assign(gameState, {
+                health: 100,
+                hunger: 100,
+                water: 100,
+                day: 1,
+                inventory: {
+                    wood: 0,
+                    stone: 0,
+                    food: 0,
+                    rope: 0,
+                    axe: 0,
+                    pickaxe: 0,
+                    campfire: 0
+                }
+            });
+            
+            Object.assign(gameState, settings);
+            updateUI();
+            renderInventory();
+            saveGame();
+        }
+
+        // Start the game
+        window.onload = init;
+    </script>
+</body>
+</html>

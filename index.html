@@ -15,14 +15,14 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            overflow: auto; /* ✅ Allow scrolling */
+            overflow: auto; /* ✅ allow page scrolling */
         }
 
         #gameContainer {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 60px; /* ✅ Space for ad banner */
+            padding-bottom: 80px; /* ✅ Space for ad */
         }
 
         #statsPanel {
@@ -36,18 +36,18 @@
             display: flex;
             flex-direction: column;
             padding: 10px;
-            overflow-y: auto;
+            overflow-y: auto; /* ✅ scrolling */
         }
 
         #gameLog {
-            flex-grow: 1;
+            max-height: 300px;
             background-color: #222;
             border: 1px solid #444;
             padding: 10px;
             margin-bottom: 10px;
-            overflow-y: scroll;
+            overflow-y: auto;
             font-size: 14px;
-            max-height: 300px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .btn {
@@ -126,25 +126,18 @@
             transform: translateX(26px);
         }
 
-        /* ✅ AD BANNER */
         #adBanner {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 60px;
-            background-color: #333;
-            color: white;
+            background: #111;
+            color: #ccc;
             text-align: center;
-            line-height: 60px;
-            font-size: 16px;
-            border-top: 2px solid #444;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 1px solid #333;
             z-index: 999;
-        }
-
-        #adBanner a {
-            color: #4CAF50;
-            text-decoration: none;
         }
     </style>
 </head>
@@ -156,7 +149,7 @@
             <div>Water: <span id="waterValue">100</span></div>
             <div>Wood: <span id="woodValue">0</span></div>
         </div>
-        
+
         <div id="actionPanel">
             <div id="gameLog">Welcome to Pixel Survival! Gather resources to stay alive.</div>
             <button class="btn" id="chopWoodBtn">Chop Wood</button>
@@ -164,7 +157,7 @@
             <button class="btn" id="restBtn">Rest</button>
             <button class="btn" id="exploreBtn">Explore</button>
         </div>
-        
+
         <div id="settingsPanel">
             <div class="toggle-container">
                 <span class="toggle-label">Data Saver</span>
@@ -183,9 +176,8 @@
         </div>
     </div>
 
-    <!-- ✅ AD BANNER -->
     <div id="adBanner">
-        Your Ad Here — Play more games at <a href="https://example.com" target="_blank">example.com</a>
+        🔔 Advertisement: Try our other game at <a href="#" style="color:#4CAF50;">example.com</a>
     </div>
 
     <script>
@@ -257,11 +249,11 @@
             if (gameState.water < 80) {
                 gameState.water = Math.min(100, gameState.water + 20);
                 addToLog("Drank water! +20 water");
+                updateUI();
+                saveGame();
             } else {
                 addToLog("Not thirsty right now");
             }
-            updateUI();
-            saveGame();
         }
 
         function rest() {

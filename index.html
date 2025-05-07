@@ -17,20 +17,28 @@
             user-select: none;
             overflow: hidden;
         }
-        
+
+        #adBanner {
+            width: 100%;
+            background-color: #1a1a1a;
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 2px solid #333;
+        }
+
         #gameContainer {
             width: 100vw;
-            height: 100vh;
+            height: calc(100vh - 80px); /* Adjusted for ad banner */
             display: flex;
             flex-direction: column;
         }
-        
+
         #statsPanel {
             padding: 10px;
             background-color: #2a2a2a;
             border-bottom: 2px solid #444;
         }
-        
+
         #actionPanel {
             flex-grow: 1;
             display: flex;
@@ -38,7 +46,7 @@
             padding: 10px;
             overflow-y: auto;
         }
-        
+
         #gameLog {
             flex-grow: 1;
             background-color: #222;
@@ -48,7 +56,7 @@
             overflow-y: scroll;
             font-size: 14px;
         }
-        
+
         .btn {
             background-color: #333;
             color: white;
@@ -59,40 +67,40 @@
             border-radius: 4px;
             font-size: 16px;
         }
-        
+
         .btn:active {
             background-color: #444;
         }
-        
+
         #settingsPanel {
             padding: 10px;
             background-color: #2a2a2a;
             border-top: 2px solid #444;
         }
-        
+
         .toggle-container {
             display: flex;
             justify-content: space-between;
             margin: 5px 0;
         }
-        
+
         .toggle-label {
             font-size: 14px;
         }
-        
+
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 50px;
             height: 24px;
         }
-        
+
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-        
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -104,7 +112,7 @@
             transition: .4s;
             border-radius: 24px;
         }
-        
+
         .slider:before {
             position: absolute;
             content: "";
@@ -116,17 +124,33 @@
             transition: .4s;
             border-radius: 50%;
         }
-        
+
         input:checked + .slider {
             background-color: #4CAF50;
         }
-        
+
         input:checked + .slider:before {
             transform: translateX(26px);
         }
     </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <!-- Ad Banner -->
+    <div id="adBanner">
+        <!-- Replace this with your real AdSense code -->
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-slot="YYYYYYYYYY"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <!-- Game UI -->
     <div id="gameContainer">
         <div id="statsPanel">
             <div>Health: <span id="healthValue">100</span></div>
@@ -134,7 +158,7 @@
             <div>Water: <span id="waterValue">100</span></div>
             <div>Wood: <span id="woodValue">0</span></div>
         </div>
-        
+
         <div id="actionPanel">
             <div id="gameLog">Welcome to Pixel Survival! Gather resources to stay alive.</div>
             <button class="btn" id="chopWoodBtn">Chop Wood</button>
@@ -142,7 +166,7 @@
             <button class="btn" id="restBtn">Rest</button>
             <button class="btn" id="exploreBtn">Explore</button>
         </div>
-        
+
         <div id="settingsPanel">
             <div class="toggle-container">
                 <span class="toggle-label">Data Saver</span>
@@ -162,7 +186,6 @@
     </div>
 
     <script>
-        // Game State
         const gameState = {
             health: 100,
             hunger: 100,
@@ -173,7 +196,8 @@
             lowGraphicsMode: false
         };
 
-        // DOM Elements
+        let isGameOver = false;
+
         const healthValue = document.getElementById('healthValue');
         const hungerValue = document.getElementById('hungerValue');
         const waterValue = document.getElementById('waterValue');
@@ -182,53 +206,46 @@
         const dataSaverToggle = document.getElementById('dataSaverToggle');
         const lowGraphicsToggle = document.getElementById('lowGraphicsToggle');
 
-        // Initialize
         function init() {
             loadGame();
             updateUI();
-            
-            // Set up event listeners
+
             document.getElementById('chopWoodBtn').addEventListener('click', chopWood);
             document.getElementById('drinkBtn').addEventListener('click', drink);
             document.getElementById('restBtn').addEventListener('click', rest);
             document.getElementById('exploreBtn').addEventListener('click', explore);
-            
+
             dataSaverToggle.addEventListener('change', toggleDataSaver);
             lowGraphicsToggle.addEventListener('change', toggleLowGraphics);
-            
-            // Set initial toggle states
+
             dataSaverToggle.checked = gameState.dataSaverEnabled;
             lowGraphicsToggle.checked = gameState.lowGraphicsMode;
-            
-            // Start game loop
-            setInterval(gameLoop, 10000); // Every 10 seconds
+
+            setInterval(gameLoop, 10000);
         }
 
-        // Main Game Loop
         function gameLoop() {
-            // Stat decay
+            if (isGameOver) return;
+
             gameState.hunger = Math.max(0, gameState.hunger - 5);
             gameState.water = Math.max(0, gameState.water - 3);
-            
-            // Health effects
+
             if (gameState.hunger <= 0 || gameState.water <= 0) {
                 gameState.health = Math.max(0, gameState.health - 10);
                 addToLog("You're starving or dehydrated!");
             }
-            
-            // Day cycle
+
             gameState.day++;
-            
-            // Check for death
+
             if (gameState.health <= 0) {
+                isGameOver = true;
                 gameOver();
             }
-            
+
             updateUI();
             saveGame();
         }
 
-        // Game Actions
         function chopWood() {
             const woodGained = Math.floor(Math.random() * 3) + 1;
             gameState.wood += woodGained;
@@ -242,11 +259,11 @@
             if (gameState.water < 80) {
                 gameState.water = Math.min(100, gameState.water + 20);
                 addToLog("Drank water! +20 water");
-                updateUI();
-                saveGame();
             } else {
                 addToLog("Not thirsty right now");
             }
+            updateUI();
+            saveGame();
         }
 
         function rest() {
@@ -263,7 +280,7 @@
                 { text: "Got attacked by a wild animal! -15 health", effect: () => gameState.health = Math.max(0, gameState.health - 15) },
                 { text: "Found nothing interesting", effect: () => {} }
             ];
-            
+
             const randomEvent = events[Math.floor(Math.random() * events.length)];
             randomEvent.effect();
             addToLog(randomEvent.text);
@@ -271,14 +288,12 @@
             saveGame();
         }
 
-        // UI Functions
         function updateUI() {
             healthValue.textContent = gameState.health;
             hungerValue.textContent = gameState.hunger;
             waterValue.textContent = gameState.water;
             woodValue.textContent = gameState.wood;
-            
-            // Visual feedback for critical stats
+
             healthValue.style.color = gameState.health < 30 ? 'red' : 'white';
             hungerValue.style.color = gameState.hunger < 30 ? 'red' : 'white';
             waterValue.style.color = gameState.water < 30 ? 'red' : 'white';
@@ -288,14 +303,12 @@
             const entry = document.createElement('div');
             entry.textContent = `Day ${gameState.day}: ${message}`;
             gameLog.insertBefore(entry, gameLog.firstChild);
-            
-            // Limit log entries
+
             if (gameLog.children.length > 20) {
                 gameLog.removeChild(gameLog.lastChild);
             }
         }
 
-        // Settings
         function toggleDataSaver() {
             gameState.dataSaverEnabled = dataSaverToggle.checked;
             if (gameState.dataSaverEnabled) {
@@ -312,10 +325,8 @@
             addToLog(`Low graphics ${gameState.lowGraphicsMode ? 'enabled' : 'disabled'}`);
         }
 
-        // Data Management
         function saveGame() {
             if (!gameState.dataSaverEnabled) return;
-            
             try {
                 localStorage.setItem('survivalSave', JSON.stringify(gameState));
             } catch (e) {
@@ -336,17 +347,14 @@
             }
         }
 
-        // Game State
         function gameOver() {
             addToLog("GAME OVER! You didn't survive the wasteland.");
             addToLog("Resetting game...");
-            
-            // Reset state but keep settings
             const settings = {
                 dataSaverEnabled: gameState.dataSaverEnabled,
                 lowGraphicsMode: gameState.lowGraphicsMode
             };
-            
+
             Object.assign(gameState, {
                 health: 100,
                 hunger: 100,
@@ -354,13 +362,13 @@
                 wood: 0,
                 day: 1
             });
-            
+
             Object.assign(gameState, settings);
+            isGameOver = false;
             updateUI();
             saveGame();
         }
 
-        // Start the game
         window.onload = init;
     </script>
 </body>

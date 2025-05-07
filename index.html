@@ -214,6 +214,10 @@
             font-size: 14px;
             color: #4CAF50;
         }
+        
+        .warning {
+            color: #ff9900;
+        }
     </style>
 </head>
 <body>
@@ -506,44 +510,54 @@
             saveGame();
         }
 
-        // Crafting System
+        // Enhanced Crafting System with Ingredient Checking
         function craftItem(recipeName) {
             const recipe = craftingRecipes[recipeName];
-            let canCraft = true;
+            let missingIngredients = [];
             
-            // Check ingredients
+            // Check if we have all required ingredients
             for (const [item, amount] of Object.entries(recipe.ingredients)) {
                 if (gameState.inventory[item] < amount) {
-                    canCraft = false;
-                    addToLog(`Not enough ${item} to craft ${recipe.name}`);
-                    break;
+                    missingIngredients.push(`${amount} ${item}`);
                 }
+            }
+
+            if (missingIngredients.length > 0) {
+                // Show warning about missing ingredients
+                const warningEntry = document.createElement('div');
+                warningEntry.className = 'warning';
+                warningEntry.textContent = `Can't craft ${recipe.name}! Missing: ${missingIngredients.join(', ')}`;
+                elements.gameLog.insertBefore(warningEntry, elements.gameLog.firstChild);
+                
+                // Limit log entries
+                if (elements.gameLog.children.length > 20) {
+                    elements.gameLog.removeChild(elements.gameLog.lastChild);
+                }
+                return;
+            }
+
+            // Deduct ingredients
+            for (const [item, amount] of Object.entries(recipe.ingredients)) {
+                gameState.inventory[item] -= amount;
+                addToLog(`Used ${amount} ${item}`);
             }
             
-            if (canCraft) {
-                // Deduct ingredients
-                for (const [item, amount] of Object.entries(recipe.ingredients)) {
-                    gameState.inventory[item] -= amount;
-                }
-                
-                // Add results
-                for (const [item, amount] of Object.entries(recipe.result)) {
-                    gameState.inventory[item] += amount;
-                }
-                
-                addToLog(`Crafted ${recipe.name}!`);
-                
-                // Unlock new recipes if applicable
-                if (recipeName === 'axe' && !gameState.unlockedRecipes.includes('pickaxe')) {
-                    gameState.unlockedRecipes.push('pickaxe');
-                    addToLog("New recipe unlocked: Stone Pickaxe!");
-                }
-                
-                updateUI();
-                renderInventory();
-                renderCraftingRecipes();
-                saveGame();
+            // Add crafted items
+            for (const [item, amount] of Object.entries(recipe.result)) {
+                gameState.inventory[item] += amount;
+                addToLog(`Created ${amount} ${item}!`);
             }
+
+            // Check for new recipe unlocks
+            if (recipeName === 'axe' && !gameState.unlockedRecipes.includes('pickaxe')) {
+                gameState.unlockedRecipes.push('pickaxe');
+                addToLog("New recipe unlocked: Stone Pickaxe!");
+            }
+
+            updateUI();
+            renderInventory();
+            renderCraftingRecipes();
+            saveGame();
         }
 
         // UI Functions

@@ -15,14 +15,14 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            overflow: auto; /* ✅ allow page scrolling */
+            overflow: hidden;
         }
 
         #gameContainer {
-            min-height: 100vh;
+            width: 100vw;
+            height: calc(100vh - 60px);
             display: flex;
             flex-direction: column;
-            padding-bottom: 80px; /* ✅ Space for ad */
         }
 
         #statsPanel {
@@ -36,18 +36,17 @@
             display: flex;
             flex-direction: column;
             padding: 10px;
-            overflow-y: auto; /* ✅ scrolling */
+            overflow-y: auto;
         }
 
         #gameLog {
-            max-height: 300px;
+            flex-grow: 1;
             background-color: #222;
             border: 1px solid #444;
             padding: 10px;
             margin-bottom: 10px;
-            overflow-y: auto;
+            overflow-y: scroll;
             font-size: 14px;
-            -webkit-overflow-scrolling: touch;
         }
 
         .btn {
@@ -127,17 +126,12 @@
         }
 
         #adBanner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #111;
-            color: #ccc;
-            text-align: center;
-            padding: 10px;
-            font-size: 14px;
-            border-top: 1px solid #333;
-            z-index: 999;
+            height: 60px;
+            background-color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 2px solid #333;
         }
     </style>
 </head>
@@ -176,8 +170,9 @@
         </div>
     </div>
 
+    <!-- Median.co Ad Banner -->
     <div id="adBanner">
-        🔔 Advertisement: Try our other game at <a href="#" style="color:#4CAF50;">example.com</a>
+        <script src="https://median.co/snippet.js" data-id="YOUR-MEDIAN-ID" async></script>
     </div>
 
     <script>
@@ -311,56 +306,4 @@
 
         function toggleLowGraphics() {
             gameState.lowGraphicsMode = lowGraphicsToggle.checked;
-            document.body.style.backgroundColor = gameState.lowGraphicsMode ? '#111' : '#1a1a1a';
-            addToLog(`Low graphics ${gameState.lowGraphicsMode ? 'enabled' : 'disabled'}`);
-        }
-
-        function saveGame() {
-            if (!gameState.dataSaverEnabled) return;
-
-            try {
-                localStorage.setItem('survivalSave', JSON.stringify(gameState));
-            } catch (e) {
-                console.error("Failed to save game:", e);
-            }
-        }
-
-        function loadGame() {
-            try {
-                const savedData = localStorage.getItem('survivalSave');
-                if (savedData) {
-                    const parsedData = JSON.parse(savedData);
-                    Object.assign(gameState, parsedData);
-                    addToLog("Game loaded");
-                }
-            } catch (e) {
-                console.error("Failed to load game:", e);
-            }
-        }
-
-        function gameOver() {
-            addToLog("GAME OVER! You didn't survive the wasteland.");
-            addToLog("Resetting game...");
-
-            const settings = {
-                dataSaverEnabled: gameState.dataSaverEnabled,
-                lowGraphicsMode: gameState.lowGraphicsMode
-            };
-
-            Object.assign(gameState, {
-                health: 100,
-                hunger: 100,
-                water: 100,
-                wood: 0,
-                day: 1
-            });
-
-            Object.assign(gameState, settings);
-            updateUI();
-            saveGame();
-        }
-
-        window.onload = init;
-    </script>
-</body>
-</html>
+            document.body.style.backgroundColor

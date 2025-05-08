@@ -92,6 +92,33 @@ const translations = {
     fullHunger: "Vous êtes déjà plein!",
     craftedMedkit: "Vous avez fabriqué une trousse de premiers secours!",
     noMaterials: "Vous n'avez pas assez de matériaux pour fabriquer une trousse de premiers secours."
+  },
+  de: {
+    health: "Gesundheit",
+    hunger: "Hunger",
+    food: "Essen",
+    wood: "Holz",
+    stone: "Stein",
+    water: "Wasser",
+    medkits: "Erste-Hilfe-Sets",
+    actions: {
+      findFood: "Essen finden 🍞",
+      eatFood: "Essen essen 🍽️",
+      mine: "Abbauen ⛏️",
+      chopWood: "Holz hacken 🌲",
+      explore: "Erforschen 🧭",
+      drinkWater: "Wasser trinken 💧",
+      rest: "Ausruhen 🛏️"
+    },
+    settings: {
+      language: "Sprache",
+      dataSaver: "Datensparer"
+    },
+    crafting: "Erste-Hilfe-Set herstellen 💊",
+    noFood: "Du hast kein Essen in deinem Inventar!",
+    fullHunger: "Du bist schon satt!",
+    craftedMedkit: "Du hast ein Erste-Hilfe-Set hergestellt!",
+    noMaterials: "Du hast nicht genug Materialien, um ein Erste-Hilfe-Set herzustellen."
   }
 };
 

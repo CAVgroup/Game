@@ -10,56 +10,47 @@
   <div id="game-container">
     <div id="header">
       <h1>Survival Game</h1>
-      <button onclick="toggleSettings()">⚙️ Settings</button>
     </div>
 
-    <div id="settings" style="display: none;">
+    <!-- Tabs -->
+    <div id="tabs">
+      <button class="tab-button" onclick="showTab('inventory')">Inventory</button>
+      <button class="tab-button" onclick="showTab('crafting')">Crafting</button>
+      <button class="tab-button" onclick="showTab('settings')">Settings</button>
+    </div>
+
+    <!-- Content Sections (Initially hidden) -->
+    <div id="inventory" class="tab-content">
+      <h3>Inventory</h3>
+      <div id="inventory-content">
+        <!-- Inventory items go here -->
+      </div>
+    </div>
+    <div id="crafting" class="tab-content">
+      <h3>Crafting</h3>
+      <div id="crafting-content">
+        <!-- Crafting items go here -->
+      </div>
+    </div>
+    <div id="settings" class="tab-content">
       <h3>Settings</h3>
       <label for="language">Language:</label>
-      <select id="language" onchange="changeLanguage()">
+      <select id="language">
         <option value="en">English</option>
-        <option value="es">Español</option>
-        <option value="fr">Français</option>
-        <option value="de">Deutsch</option>
+        <option value="de">German</option>
       </select>
-      <br>
-
-      <label for="dataSaver">Data Saver:</label>
-      <input type="checkbox" id="dataSaver" onchange="toggleDataSaver()">
+      <br><br>
+      <label for="data-saver">Data Saver:</label>
+      <input type="checkbox" id="data-saver">
+      <br><br>
+      <button onclick="saveSettings()">Save Settings</button>
     </div>
 
-    <div id="status">
-      <p><span id="healthLabel">Health</span>: <span id="health">100</span></p>
-      <p><span id="hungerLabel">Hunger</span>: <span id="hunger">50</span></p>
+    <!-- Output Area -->
+    <div id="output">
+      <h3>Game Output</h3>
+      <p id="output-text">Actions will appear here...</p>
     </div>
-
-    <div id="actions">
-      <button onclick="findFood()">Find Food 🍞</button>
-      <button onclick="eatFood()">Eat Food 🍽️</button>
-      <button onclick="mine()">Mine ⛏️</button>
-      <button onclick="chopWood()">Chop Wood 🌲</button>
-      <button onclick="explore()">Explore 🧭</button>
-      <button onclick="drinkWater()">Drink Water 💧</button>
-      <button onclick="rest()">Rest 🛏️</button>
-    </div>
-
-    <div id="inventory">
-      <h3>Inventory</h3>
-      <p id="foodCount">Food: 0</p>
-      <p id="woodCount">Wood: 0</p>
-      <p id="stoneCount">Stone: 0</p>
-      <p id="waterCount">Water: 0</p>
-      <p id="medkitsCount">Medkits: 0</p>
-    </div>
-
-    <div id="crafting">
-      <h3>Crafting</h3>
-      <button onclick="craftItem()">Craft Medkit 💊</button>
-      <p id="craftingMessage"></p>
-    </div>
-
-    <div id="output"></div>
-
   </div>
 
   <script src="game.js"></script>

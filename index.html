@@ -17,6 +17,7 @@
       <button class="tab-button" onclick="showTab('inventory')">Inventory</button>
       <button class="tab-button" onclick="showTab('crafting')">Crafting</button>
       <button class="tab-button" onclick="showTab('settings')">Settings</button>
+      <button class="tab-button" onclick="showTab('activity')">Activity</button>
     </div>
 
     <!-- Content Sections (Initially hidden) -->
@@ -45,11 +46,26 @@
       <br><br>
       <button onclick="saveSettings()">Save Settings</button>
     </div>
+    <div id="activity" class="tab-content">
+      <h3>Activity</h3>
+      <button onclick="eatFood()">Eat Food</button>
+      <button onclick="drinkWater()">Drink Water</button>
+      <button onclick="explore()">Explore</button>
+      <button onclick="chopWood()">Chop Wood</button>
+      <button onclick="rest()">Rest</button>
+    </div>
 
-    <!-- Output Area -->
+    <!-- Activity and Stats -->
     <div id="output">
       <h3>Game Output</h3>
       <p id="output-text">Actions will appear here...</p>
+      <h3>Stats</h3>
+      <ul id="stats">
+        <li>Health: <span id="health">100</span></li>
+        <li>Hunger: <span id="hunger">100</span></li>
+        <li>Energy: <span id="energy">100</span></li>
+        <li>Wood: <span id="wood">0</span></li>
+      </ul>
     </div>
   </div>
 

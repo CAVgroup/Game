@@ -1,541 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pixel Survival: Wasteland</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Pixel Survival: Wasteland</title>
     <style>
-        /* [Previous CSS styles remain the same] */
-        
-        .language-selector {
-            margin: 15px 0;
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Courier New', monospace;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #languageSelector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #statsPanel {
             padding: 10px;
+            background-color: #2a2a2a;
+            border-bottom: 2px solid #444;
+        }
+
+        #actionPanel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        #gameLog {
+            flex-grow: 1;
+            background-color: #222;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-y: scroll;
+            font-size: 14px;
+        }
+        .btn {
             background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 12px;
+            margin: 5px 0;
+            text-align: center;
             border-radius: 4px;
+            font-size: 16px;
         }
-        
-        .language-option {
-            display: inline-block;
-            margin: 5px;
-            padding: 8px 12px;
+
+        .btn:active {
             background-color: #444;
-            border-radius: 4px;
-            cursor: pointer;
         }
-        
-        .language-option.selected {
+
+        #settingsPanel {
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-top: 2px solid #444;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .toggle-label {
+            font-size: 14px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
             background-color: #4CAF50;
         }
-        
-        .emoji {
-            font-size: 1.2em;
-            margin-right: 5px;
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
 <body>
-    <!-- [Previous HTML structure remains the same until settings panel] -->
-    
-    <div id="settings" class="tabContent">
-        <h3>Settings ⚙️</h3>
-        
-        <div class="language-selector">
-            <h4>Language 🌐</h4>
-            <div class="language-option selected" data-lang="en">English</div>
-            <div class="language-option" data-lang="es">Español</div>
-            <div class="language-option" data-lang="fr">Français</div>
-            <div class="language-option" data-lang="de">Deutsch</div>
-        </div>
-        
-        <div class="toggle-container">
-            <span class="toggle-label">Data Saver 💾</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="dataSaverToggle" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-container">
-            <span class="toggle-label">Low Graphics 🖥️</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="lowGraphicsToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-container">
-            <span class="toggle-label">Animations 🎬</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="animationsToggle" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <button class="btn" id="resetBtn">Reset Game 🔄</button>
-    </div>
+    <select id="languageSelector">
+        <option value="en">English 🇬🇧</option>
+        <option value="es">Español 🇪🇸</option>
+        <option value="de">Deutsch 🇩🇪</option>
+        <option value="fr">Français 🇫🇷</option>
+    </select>
 
+    <div id="gameContainer">
+        <div id="statsPanel">
+            <div id="statHealth">❤️ Health: <span id="healthValue">100</span></div>
+            <div id="statHunger">🍖 Hunger: <span id="hungerValue">100</span></div>
+            <div id="statWater">💧 Water: <span id="waterValue">100</span></div>
+            <div id="statWood">🪵 Wood: <span id="woodValue">0</span></div>
+        </div>
+
+        <div id="actionPanel">
+            <div id="gameLog">🌅 Welcome to Pixel Survival! Gather resources to stay alive.</div>
+            <button class="btn" id="chopWoodBtn">🪓 Chop Wood</button>
+            <button class="btn" id="drinkBtn">🥤 Drink Water</button>
+            <button class="btn" id="restBtn">🛏️ Rest</button>
+            <button class="btn" id="exploreBtn">🧭 Explore</button>
+        </div>
+
+        <div id="settingsPanel">
+            <div class="toggle-container">
+                <span class="toggle-label" id="labelDataSaver">Data Saver</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dataSaverToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-container">
+                <span class="toggle-label" id="labelLowGraphics">Low Graphics</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="lowGraphicsToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
     <script>
-        // Language Translations
-        const translations = {
+        const languageStrings = {
             en: {
-                title: "Pixel Survival: Wasteland",
-                tabs: ["Actions", "Inventory", "Crafting", "Settings"],
-                stats: ["Day", "Health", "Hunger", "Water"],
-                actions: ["Chop Wood", "Drink Water", "Rest", "Explore", "Mine Stone", "Forage Food", "Eat Food"],
-                inventory: "Inventory",
-                crafting: "Crafting Recipes",
-                settings: "Settings",
-                welcome: "Welcome to Pixel Survival! Gather resources to stay alive.",
-                chopWood: "Chopped wood! +{0} wood 🌲",
-                mineStone: "Mined stone! +{0} stone ⛏️",
-                forage: "Foraged food! +{0} food 🍎",
-                drink: "Drank water! +20 water 💧",
-                notThirsty: "Not thirsty right now 🚱",
-                eat: "Ate food! +25 hunger 🍗",
-                noFood: "No food in inventory 🚫",
-                rest: "Rested! +{0} health 😴",
-                exploreEvents: [
-                    "Found a berry bush! +2 food 🫐",
-                    "Discovered a small pond! +20 water 🌊",
-                    "Got attacked by a wild animal! -15 health 🐺",
-                    "Found an abandoned campsite! +3 wood, +2 stone 🏕️",
-                    "Found nothing interesting 😐"
-                ],
-                unlockPickaxe: "New recipe unlocked: Stone Pickaxe! ⛏️",
-                cantCraft: "Can't craft {0}! Missing: {1} ❌",
-                usedItem: "Used {0} {1}",
-                createdItem: "Created {0} {1}! ✅",
-                dataSaver: ["Data saver enabled", "Data saver disabled"],
-                lowGraphics: ["Low graphics enabled", "Low graphics disabled"],
-                animations: ["Animations enabled", "Animations disabled"],
-                resetConfirm: "Are you sure you want to reset your game? All progress will be lost! ⚠️",
-                gameOver: "GAME OVER! You didn't survive the wasteland. 💀",
-                resetGame: "Resetting game... 🔄",
-                loaded: "Game loaded 📂",
-                saveFailed: "Failed to save progress ❌",
-                loadFailed: "Failed to load saved game ❌",
-                starving: "You're starving or dehydrated! 🥵"
+                welcome: "🌅 Welcome to Pixel Survival! Gather resources to stay alive.",
+                chop: "🪓 Chopped wood! +{wood} wood",
+                drink: "🥤 Drank water! +20 water",
+                notThirsty: "😐 Not thirsty right now",
+                rest: "🛏️ Rested! +15 health",
+                dataSaverOn: "💾 Data saver enabled",
+                dataSaverOff: "💾 Data saver disabled",
+                lowGraphicsOn: "🟢 Low graphics enabled",
+                lowGraphicsOff: "🔴 Low graphics disabled",
+                gameOver: "☠️ GAME OVER! You didn't survive the wasteland.",
+                reset: "🔁 Resetting game...",
+                starving: "⚠️ You're starving or dehydrated!",
+                loaded: "💾 Game loaded"
             },
             es: {
-                title: "Supervivencia Pixel: Tierra Baldía",
-                tabs: ["Acciones", "Inventario", "Creación", "Ajustes"],
-                stats: ["Día", "Salud", "Hambre", "Agua"],
-                actions: ["Talad Madera", "Beber Agua", "Descansar", "Explorar", "Minar Piedra", "Buscar Comida", "Comer"],
-                inventory: "Inventario",
-                crafting: "Recetas de Creación",
-                settings: "Ajustes",
-                welcome: "¡Bienvenido a Supervivencia Pixel! Recolecta recursos para mantenerte con vida.",
-                chopWood: "¡Talaste madera! +{0} madera 🌲",
-                mineStone: "¡Minaste piedra! +{0} piedra ⛏️",
-                forage: "¡Encontraste comida! +{0} comida 🍎",
-                drink: "¡Bebiste agua! +20 agua 💧",
-                notThirsty: "No tienes sed ahora 🚱",
-                eat: "¡Comiste! +25 hambre 🍗",
-                noFood: "No hay comida en el inventario 🚫",
-                rest: "¡Descansaste! +{0} salud 😴",
-                exploreEvents: [
-                    "¡Encontraste arbustos de bayas! +2 comida 🫐",
-                    "¡Descubriste un pequeño estanque! +20 agua 🌊",
-                    "¡Te atacó un animal salvaje! -15 salud 🐺",
-                    "¡Encontraste un campamento abandonado! +3 madera, +2 piedra 🏕️",
-                    "No encontraste nada interesante 😐"
-                ],
-                unlockPickaxe: "¡Nueva receta desbloqueada: Pico de piedra! ⛏️",
-                cantCraft: "¡No puedes crear {0}! Faltan: {1} ❌",
-                usedItem: "Usaste {0} {1}",
-                createdItem: "¡Creaste {0} {1}! ✅",
-                dataSaver: ["Ahorro de datos activado", "Ahorro de datos desactivado"],
-                lowGraphics: ["Gráficos bajos activados", "Gráficos bajos desactivados"],
-                animations: ["Animaciones activadas", "Animaciones desactivadas"],
-                resetConfirm: "¿Seguro que quieres reiniciar el juego? ¡Todo el progreso se perderá! ⚠️",
-                gameOver: "¡FIN DEL JUEGO! No sobreviviste a la tierra baldía. 💀",
-                resetGame: "Reiniciando juego... 🔄",
-                loaded: "Juego cargado 📂",
-                saveFailed: "Error al guardar progreso ❌",
-                loadFailed: "Error al cargar partida guardada ❌",
-                starving: "¡Tienes hambre o estás deshidratado! 🥵"
+                welcome: "🌅 ¡Bienvenido a Supervivencia Pixel! Reúne recursos para sobrevivir.",
+                chop: "🪓 ¡Madera recogida! +{wood} madera",
+                drink: "🥤 ¡Bebiste agua! +20 agua",
+                notThirsty: "😐 No tienes sed ahora",
+                rest: "🛏️ ¡Descansaste! +15 salud",
+                dataSaverOn: "💾 Ahorro de datos activado",
+                dataSaverOff: "💾 Ahorro de datos desactivado",
+                lowGraphicsOn: "🟢 Gráficos bajos activados",
+                lowGraphicsOff: "🔴 Gráficos bajos desactivados",
+                gameOver: "☠️ ¡GAME OVER! No sobreviviste al yermo.",
+                reset: "🔁 Reiniciando juego...",
+                starving: "⚠️ ¡Estás muriendo de hambre o deshidratado!",
+                loaded: "💾 Juego cargado"
             },
-            fr: {
-                title: "Survie Pixel: Terres Désolées",
-                tabs: ["Actions", "Inventaire", "Artisanat", "Paramètres"],
-                stats: ["Jour", "Santé", "Faim", "Eau"],
-                actions: ["Couper du Bois", "Boire de l'Eau", "Se Reposer", "Explorer", "Miner de la Pierre", "Chercher de la Nourriture", "Manger"],
-                inventory: "Inventaire",
-                crafting: "Recettes d'Artisanat",
-                settings: "Paramètres",
-                welcome: "Bienvenue dans Survie Pixel! Collectez des ressources pour rester en vie.",
-                chopWood: "Bois coupé! +{0} bois 🌲",
-                mineStone: "Pierre minée! +{0} pierre ⛏️",
-                forage: "Nourriture trouvée! +{0} nourriture 🍎",
-                drink: "Eau bue! +20 eau 💧",
-                notThirsty: "Pas soif maintenant 🚱",
-                eat: "Mangé! +25 faim 🍗",
-                noFood: "Pas de nourriture dans l'inventaire 🚫",
-                rest: "Reposé! +{0} santé 😴",
-                exploreEvents: [
-                    "Trouvé des baies! +2 nourriture 🫐",
-                    "Découvert un étang! +20 eau 🌊",
-                    "Attaqué par un animal sauvage! -15 santé 🐺",
-                    "Trouvé un camp abandonné! +3 bois, +2 pierre 🏕️",
-                    "Rien trouvé d'intéressant 😐"
-                ],
-                unlockPickaxe: "Nouvelle recette débloquée: Pioche en pierre! ⛏️",
-                cantCraft: "Impossible de créer {0}! Manque: {1} ❌",
-                usedItem: "Utilisé {0} {1}",
-                createdItem: "{0} {1} créé(s)! ✅",
-                dataSaver: ["Économie de données activée", "Économie de données désactivée"],
-                lowGraphics: ["Graphismes bas activés", "Graphismes bas désactivés"],
-                animations: ["Animations activées", "Animations désactivées"],
-                resetConfirm: "Êtes-vous sûr de vouloir réinitialiser le jeu? Toute progression sera perdue! ⚠️",
-                gameOver: "GAME OVER! Vous n'avez pas survécu aux terres désolées. 💀",
-                resetGame: "Réinitialisation du jeu... 🔄",
-                loaded: "Jeu chargé 📂",
-                saveFailed: "Échec de sauvegarde ❌",
-                loadFailed: "Échec de chargement ❌",
-                starving: "Vous mourrez de faim ou de soif! 🥵"
-            },
-            de: {
-                title: "Pixel Überleben: Ödland",
-                tabs: ["Aktionen", "Inventar", "Herstellung", "Einstellungen"],
-                stats: ["Tag", "Gesundheit", "Hunger", "Wasser"],
-                actions: ["Holz hacken", "Wasser trinken", "Ausruhen", "Erkunden", "Stein abbauen", "Nahrung suchen", "Essen"],
-                inventory: "Inventar",
-                crafting: "Rezepte",
-                settings: "Einstellungen",
-                welcome: "Willkommen bei Pixel Überleben! Sammle Ressourcen um zu überleben.",
-                chopWood: "Holz gehackt! +{0} Holz 🌲",
-                mineStone: "Stein abgebaut! +{0} Stein ⛏️",
-                forage: "Nahrung gefunden! +{0} Nahrung 🍎",
-                drink: "Wasser getrunken! +20 Wasser 💧",
-                notThirsty: "Jetzt nicht durstig 🚱",
-                eat: "Gegessen! +25 Hunger 🍗",
-                noFood: "Keine Nahrung im Inventar 🚫",
-                rest: "Ausgeruht! +{0} Gesundheit 😴",
-                exploreEvents: [
-                    "Beerenstrauch gefunden! +2 Nahrung 🫐",
-                    "Kleiner Teich entdeckt! +20 Wasser 🌊",
-                    "Von einem wilden Tier angegriffen! -15 Gesundheit 🐺",
-                    "Verlassenes Lager gefunden! +3 Holz, +2 Stein 🏕️",
-                    "Nichts Interessantes gefunden 😐"
-                ],
-                unlockPickaxe: "Neues Rezept freigeschaltet: Steinspitzhacke! ⛏️",
-                cantCraft: "{0} kann nicht hergestellt werden! Fehlt: {1} ❌",
-                usedItem: "{0} {1} verbraucht",
-                createdItem: "{0} {1} hergestellt! ✅",
-                dataSaver: ["Datensparmodus aktiviert", "Datensparmodus deaktiviert"],
-                lowGraphics: ["Einfache Grafik aktiviert", "Einfache Grafik deaktiviert"],
-                animations: ["Animationen aktiviert", "Animationen deaktiviert"],
-                resetConfirm: "Sind Sie sicher, dass Sie das Spiel zurücksetzen möchten? Alle Fortschritte gehen verloren! ⚠️",
-                gameOver: "GAME OVER! Sie haben das Ödland nicht überlebt. 💀",
-                resetGame: "Spiel wird zurückgesetzt... 🔄",
-                loaded: "Spiel geladen 📂",
-                saveFailed: "Speichern fehlgeschlagen ❌",
-                loadFailed: "Laden fehlgeschlagen ❌",
-                starving: "Sie verhungern oder verdursten! 🥵"
-            }
+            // Add more translations here...
         };
 
-        // Game State with language
-        const gameState = {
-            health: 100,
-            hunger: 100,
-            water: 100,
-            day: 1,
-            inventory: {
-                wood: 0,
-                stone: 0,
-                food: 0,
-                rope: 0,
-                axe: 0,
-                pickaxe: 0,
-                campfire: 0
-            },
-            settings: {
-                dataSaver: true,
-                lowGraphics: false,
-                animations: true,
-                language: 'en'
-            },
-            unlockedRecipes: ['axe', 'campfire']
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = languageStrings[lang];
+
+            document.getElementById("statHealth").firstChild.textContent = `❤️ ${t.health || "Health"}: `;
+            document.getElementById("statHunger").firstChild.textContent = `🍖 ${t.hunger || "Hunger"}: `;
+            document.getElementById("statWater").firstChild.textContent = `💧 ${t.water || "Water"}: `;
+            document.getElementById("statWood").firstChild.textContent = `🪵 ${t.wood || "Wood"}: `;
+
+            document.getElementById("chopWoodBtn").textContent = "🪓 " + (t.chopBtn || "Chop Wood");
+            document.getElementById("drinkBtn").textContent = "🥤 " + (t.drinkBtn || "Drink Water");
+            document.getElementById("restBtn").textContent = "🛏️ " + (t.restBtn || "Rest");
+            document.getElementById("exploreBtn").textContent = "🧭 " + (t.exploreBtn || "Explore");
+
+            document.getElementById("labelDataSaver").textContent = t.dataSaverLabel || "Data Saver";
+            document.getElementById("labelLowGraphics").textContent = t.lowGraphicsLabel || "Low Graphics";
+
+            addToLog(t.loaded);
+        }
+
+        document.getElementById("languageSelector").addEventListener("change", (e) => {
+            setLanguage(e.target.value);
+        });
+
+        // Call setLanguage on load
+        window.onload = () => {
+            init();
+            setLanguage('en');
         };
-
-        // [Previous craftingRecipes definition remains the same]
-
-        // Initialize with language support
-        function init() {
-            loadGame();
-            applyLanguage();
-            updateUI();
-            renderInventory();
-            renderCraftingRecipes();
-            
-            // Set up event listeners
-            document.getElementById('chopWoodBtn').addEventListener('click', chopWood);
-            document.getElementById('drinkBtn').addEventListener('click', drink);
-            document.getElementById('restBtn').addEventListener('click', rest);
-            document.getElementById('exploreBtn').addEventListener('click', explore);
-            document.getElementById('mineStoneBtn').addEventListener('click', mineStone);
-            document.getElementById('forageBtn').addEventListener('click', forage);
-            document.getElementById('eatBtn').addEventListener('click', eat);
-            document.getElementById('resetBtn').addEventListener('click', resetGame);
-            
-            document.getElementById('dataSaverToggle').addEventListener('change', toggleDataSaver);
-            document.getElementById('lowGraphicsToggle').addEventListener('change', toggleLowGraphics);
-            document.getElementById('animationsToggle').addEventListener('change', toggleAnimations);
-            
-            // Language selector
-            document.querySelectorAll('.language-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.language-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    option.classList.add('selected');
-                    gameState.settings.language = option.dataset.lang;
-                    applyLanguage();
-                    saveGame();
-                });
-            });
-            
-            // Set initial toggle states
-            document.getElementById('dataSaverToggle').checked = gameState.settings.dataSaver;
-            document.getElementById('lowGraphicsToggle').checked = gameState.settings.lowGraphics;
-            document.getElementById('animationsToggle').checked = gameState.settings.animations;
-            
-            // Set initial language
-            document.querySelector(`.language-option[data-lang="${gameState.settings.language}"]`).classList.add('selected');
-            
-            // Tab switching
-            elements.tabs.forEach(tab => {
-                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-            });
-            
-            // Start game loop
-            setInterval(gameLoop, 10000);
-        }
-
-        // Apply current language to UI
-        function applyLanguage() {
-            const lang = gameState.settings.language;
-            const t = translations[lang];
-            
-            // Update title
-            document.title = t.title;
-            
-            // Update tabs
-            document.querySelectorAll('.tab').forEach((tab, i) => {
-                tab.textContent = t.tabs[i];
-            });
-            
-            // Update stats labels
-            document.querySelectorAll('.stat').forEach((stat, i) => {
-                stat.textContent = t.stats[i] + ': ' + stat.querySelector('span').textContent;
-            });
-            
-            // Update action buttons
-            document.getElementById('chopWoodBtn').textContent = t.actions[0];
-            document.getElementById('drinkBtn').textContent = t.actions[1];
-            document.getElementById('restBtn').textContent = t.actions[2];
-            document.getElementById('exploreBtn').textContent = t.actions[3];
-            document.getElementById('mineStoneBtn').textContent = t.actions[4];
-            document.getElementById('forageBtn').textContent = t.actions[5];
-            document.getElementById('eatBtn').textContent = t.actions[6];
-            
-            // Update headings
-            document.querySelector('#inventory h3').textContent = t.inventory;
-            document.querySelector('#crafting h3').textContent = t.crafting;
-            document.querySelector('#settings h3').textContent = t.settings + ' ⚙️';
-            
-            // Update settings labels
-            document.querySelector('.toggle-label[for="dataSaverToggle"]').textContent = t.dataSaver[0].split(' ')[0] + ' 💾';
-            document.querySelector('.toggle-label[for="lowGraphicsToggle"]').textContent = t.lowGraphics[0].split(' ')[0] + ' 🖥️';
-            document.querySelector('.toggle-label[for="animationsToggle"]').textContent = t.animations[0].split(' ')[0] + ' 🎬';
-            document.getElementById('resetBtn').textContent = t.resetGame.split(' ')[0] + ' 🔄';
-            
-            // Update welcome message if it's still the default
-            if (elements.gameLog.children.length === 1 && elements.gameLog.children[0].textContent.includes("Welcome")) {
-                elements.gameLog.innerHTML = '';
-                addToLog(t.welcome);
-            }
-        }
-
-        // [Previous gameLoop function remains the same]
-
-        // Enhanced Game Actions with Emojis
-        function chopWood() {
-            const t = translations[gameState.settings.language];
-            const efficiency = gameState.inventory.axe > 0 ? 2 : 1;
-            const woodGained = Math.floor(Math.random() * 3 * efficiency) + 1;
-            gameState.inventory.wood += woodGained;
-            gameState.hunger = Math.max(0, gameState.hunger - 2);
-            addToLog(t.chopWood.replace('{0}', woodGained));
-            updateUI();
-            saveGame();
-        }
-
-        function mineStone() {
-            const t = translations[gameState.settings.language];
-            const efficiency = gameState.inventory.pickaxe > 0 ? 2 : 1;
-            const stoneGained = Math.floor(Math.random() * 3 * efficiency) + 1;
-            gameState.inventory.stone += stoneGained;
-            gameState.hunger = Math.max(0, gameState.hunger - 3);
-            addToLog(t.mineStone.replace('{0}', stoneGained));
-            updateUI();
-            saveGame();
-        }
-
-        function forage() {
-            const t = translations[gameState.settings.language];
-            const foodGained = Math.floor(Math.random() * 3) + 1;
-            gameState.inventory.food += foodGained;
-            addToLog(t.forage.replace('{0}', foodGained));
-            updateUI();
-            saveGame();
-        }
-
-        function drink() {
-            const t = translations[gameState.settings.language];
-            if (gameState.water < 80) {
-                gameState.water = Math.min(100, gameState.water + 20);
-                addToLog(t.drink);
-                updateUI();
-                saveGame();
-            } else {
-                addToLog(t.notThirsty);
-            }
-        }
-
-        function eat() {
-            const t = translations[gameState.settings.language];
-            if (gameState.inventory.food > 0) {
-                gameState.inventory.food--;
-                gameState.hunger = Math.min(100, gameState.hunger + 25);
-                addToLog(t.eat);
-                updateUI();
-                saveGame();
-            } else {
-                addToLog(t.noFood);
-            }
-        }
-
-        function rest() {
-            const t = translations[gameState.settings.language];
-            const bonus = gameState.inventory.campfire > 0 ? 25 : 15;
-            gameState.health = Math.min(100, gameState.health + bonus);
-            addToLog(t.rest.replace('{0}', bonus));
-            updateUI();
-            saveGame();
-        }
-
-        function explore() {
-            const t = translations[gameState.settings.language];
-            const randomIndex = Math.floor(Math.random() * t.exploreEvents.length);
-            const eventText = t.exploreEvents[randomIndex];
-            
-            // Execute corresponding effect
-            const effects = [
-                () => gameState.inventory.food += 2,
-                () => gameState.water = Math.min(100, gameState.water + 20),
-                () => gameState.health = Math.max(0, gameState.health - 15),
-                () => {
-                    gameState.inventory.wood += 3;
-                    gameState.inventory.stone += 2;
-                },
-                () => {}
-            ];
-            
-            effects[randomIndex]();
-            addToLog(eventText);
-            updateUI();
-            saveGame();
-        }
-
-        // Enhanced Crafting System with Language Support
-        function craftItem(recipeName) {
-            const t = translations[gameState.settings.language];
-            const recipe = craftingRecipes[recipeName];
-            let missingIngredients = [];
-            
-            // Check ingredients
-            for (const [item, amount] of Object.entries(recipe.ingredients)) {
-                if (gameState.inventory[item] < amount) {
-                    missingIngredients.push(`${amount} ${item}`);
-                }
-            }
-
-            if (missingIngredients.length > 0) {
-                const warningEntry = document.createElement('div');
-                warningEntry.className = 'warning';
-                warningEntry.textContent = t.cantCraft
-                    .replace('{0}', recipe.name)
-                    .replace('{1}', missingIngredients.join(', '));
-                elements.gameLog.insertBefore(warningEntry, elements.gameLog.firstChild);
-                
-                if (elements.gameLog.children.length > 20) {
-                    elements.gameLog.removeChild(elements.gameLog.lastChild);
-                }
-                return;
-            }
-
-            // Deduct ingredients
-            for (const [item, amount] of Object.entries(recipe.ingredients)) {
-                gameState.inventory[item] -= amount;
-                addToLog(t.usedItem.replace('{0}', amount).replace('{1}', item));
-            }
-            
-            // Add results
-            for (const [item, amount] of Object.entries(recipe.result)) {
-                gameState.inventory[item] += amount;
-                addToLog(t.createdItem.replace('{0}', amount).replace('{1}', item));
-            }
-
-            // Unlock pickaxe if crafting axe
-            if (recipeName === 'axe' && !gameState.unlockedRecipes.includes('pickaxe')) {
-                gameState.unlockedRecipes.push('pickaxe');
-                addToLog(t.unlockPickaxe);
-            }
-
-            updateUI();
-            renderInventory();
-            renderCraftingRecipes();
-            saveGame();
-        }
-
-        // [Previous UI functions remain the same with added emojis]
-
-        function gameOver() {
-            const t = translations[gameState.settings.language];
-            addToLog(t.gameOver);
-            addToLog(t.resetGame);
-            
-            // Reset state but keep settings and unlocked recipes
-            const settings = {
-                settings: gameState.settings,
-                unlockedRecipes: gameState.unlockedRecipes
-            };
-            
-            Object.assign(gameState, {
-                health: 100,
-                hunger: 100,
-                water: 100,
-                day: 1,
-                inventory: {
-                    wood: 0,
-                    stone: 0,
-                    food: 0,
-                    rope: 0,
-                    axe: 0,
-                    pickaxe: 0,
-                    campfire: 0
-                }
-            });
-            
-            Object.assign(gameState, settings);
-            updateUI();
-            renderInventory();
-            saveGame();
-        }
-
-        // [Remaining functions (updateUI, renderInventory, renderCraftingRecipes, etc.) remain the same]
-
-        // Start the game
-        window.onload = init;
     </script>
 </body>
 </html>

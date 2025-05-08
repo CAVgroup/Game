@@ -1,6 +1,7 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+  background-color: #121212;
+  color: #ffffff;
   margin: 0;
   padding: 0;
 }
@@ -8,10 +9,10 @@ body {
 #game-container {
   max-width: 800px;
   margin: 0 auto;
-  background-color: #fff;
+  background-color: #1e1e1e;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 #header {
@@ -28,7 +29,7 @@ button {
   padding: 10px 15px;
   margin: 5px;
   cursor: pointer;
-  border: 1px solid #ccc;
+  border: 1px solid #444;
   border-radius: 5px;
   background-color: #4CAF50;
   color: white;
@@ -67,8 +68,8 @@ select, input[type="checkbox"] {
 #output {
   margin-top: 20px;
   padding: 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
+  background-color: #333;
+  border: 1px solid #444;
   border-radius: 5px;
   display: none;
 }

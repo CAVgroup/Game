@@ -1,248 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌍 Pixel Survival: Wasteland</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a1a;
-            color: white;
-            font-family: 'Courier New', monospace;
-            touch-action: manipulation;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            overflow: hidden;
-        }
-
-        #languageSelector {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            background: #2a2a2a;
-            color: white;
-            border: 1px solid #555;
-            padding: 5px;
-        }
-
-        #gameContainer {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #statsPanel {
-            padding: 10px;
-            background-color: #2a2a2a;
-            border-bottom: 2px solid #444;
-        }
-
-        #actionPanel {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        #gameLog {
-            flex-grow: 1;
-            background-color: #222;
-            border: 1px solid #444;
-            padding: 10px;
-            margin-bottom: 10px;
-            overflow-y: scroll;
-            font-size: 14px;
-        }
-        .btn {
-            background-color: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 12px;
-            margin: 5px 0;
-            text-align: center;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .btn:active {
-            background-color: #444;
-        }
-
-        #settingsPanel {
-            padding: 10px;
-            background-color: #2a2a2a;
-            border-top: 2px solid #444;
-        }
-
-        .toggle-container {
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-        }
-
-        .toggle-label {
-            font-size: 14px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #555;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #4CAF50;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survival Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #status { margin: 10px; }
+    #inventory { margin-top: 20px; }
+    button { margin: 5px; }
+  </style>
 </head>
 <body>
-    <select id="languageSelector">
-        <option value="en">English 🇬🇧</option>
-        <option value="es">Español 🇪🇸</option>
-        <option value="de">Deutsch 🇩🇪</option>
-        <option value="fr">Français 🇫🇷</option>
-    </select>
+  <h1>Survival Game</h1>
 
-    <div id="gameContainer">
-        <div id="statsPanel">
-            <div id="statHealth">❤️ Health: <span id="healthValue">100</span></div>
-            <div id="statHunger">🍖 Hunger: <span id="hungerValue">100</span></div>
-            <div id="statWater">💧 Water: <span id="waterValue">100</span></div>
-            <div id="statWood">🪵 Wood: <span id="woodValue">0</span></div>
-        </div>
+  <div id="status">
+    <p>Health: <span id="health">100</span></p>
+    <p>Hunger: <span id="hunger">50</span></p>
+  </div>
 
-        <div id="actionPanel">
-            <div id="gameLog">🌅 Welcome to Pixel Survival! Gather resources to stay alive.</div>
-            <button class="btn" id="chopWoodBtn">🪓 Chop Wood</button>
-            <button class="btn" id="drinkBtn">🥤 Drink Water</button>
-            <button class="btn" id="restBtn">🛏️ Rest</button>
-            <button class="btn" id="exploreBtn">🧭 Explore</button>
-        </div>
+  <div>
+    <button onclick="findFood()">Find Food 🍞</button>
+    <button onclick="eatFood()">Eat Food 🍽️</button>
+    <button onclick="mine()">Mine ⛏️</button>
+    <button onclick="heal()">Heal ❤️</button>
+  </div>
 
-        <div id="settingsPanel">
-            <div class="toggle-container">
-                <span class="toggle-label" id="labelDataSaver">Data Saver</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="dataSaverToggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="toggle-container">
-                <span class="toggle-label" id="labelLowGraphics">Low Graphics</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="lowGraphicsToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-    </div>
-    <script>
-        const languageStrings = {
-            en: {
-                welcome: "🌅 Welcome to Pixel Survival! Gather resources to stay alive.",
-                chop: "🪓 Chopped wood! +{wood} wood",
-                drink: "🥤 Drank water! +20 water",
-                notThirsty: "😐 Not thirsty right now",
-                rest: "🛏️ Rested! +15 health",
-                dataSaverOn: "💾 Data saver enabled",
-                dataSaverOff: "💾 Data saver disabled",
-                lowGraphicsOn: "🟢 Low graphics enabled",
-                lowGraphicsOff: "🔴 Low graphics disabled",
-                gameOver: "☠️ GAME OVER! You didn't survive the wasteland.",
-                reset: "🔁 Resetting game...",
-                starving: "⚠️ You're starving or dehydrated!",
-                loaded: "💾 Game loaded"
-            },
-            es: {
-                welcome: "🌅 ¡Bienvenido a Supervivencia Pixel! Reúne recursos para sobrevivir.",
-                chop: "🪓 ¡Madera recogida! +{wood} madera",
-                drink: "🥤 ¡Bebiste agua! +20 agua",
-                notThirsty: "😐 No tienes sed ahora",
-                rest: "🛏️ ¡Descansaste! +15 salud",
-                dataSaverOn: "💾 Ahorro de datos activado",
-                dataSaverOff: "💾 Ahorro de datos desactivado",
-                lowGraphicsOn: "🟢 Gráficos bajos activados",
-                lowGraphicsOff: "🔴 Gráficos bajos desactivados",
-                gameOver: "☠️ ¡GAME OVER! No sobreviviste al yermo.",
-                reset: "🔁 Reiniciando juego...",
-                starving: "⚠️ ¡Estás muriendo de hambre o deshidratado!",
-                loaded: "💾 Juego cargado"
-            },
-            // Add more translations here...
-        };
+  <div id="inventory">
+    <h3>Inventory</h3>
+    <p id="foodCount">Food: 0</p>
+    <p id="woodCount">Wood: 0</p>
+    <p id="stoneCount">Stone: 0</p>
+    <p id="medkitsCount">Medkits: 0</p>
+  </div>
 
-        let currentLang = 'en';
+  <h3>Crafting</h3>
+  <div id="crafting">
+    <button onclick="craftItem()">Craft Medkit 💊</button>
+    <p id="craftingMessage"></p>
+  </div>
 
-        function setLanguage(lang) {
-            currentLang = lang;
-            const t = languageStrings[lang];
-
-            document.getElementById("statHealth").firstChild.textContent = `❤️ ${t.health || "Health"}: `;
-            document.getElementById("statHunger").firstChild.textContent = `🍖 ${t.hunger || "Hunger"}: `;
-            document.getElementById("statWater").firstChild.textContent = `💧 ${t.water || "Water"}: `;
-            document.getElementById("statWood").firstChild.textContent = `🪵 ${t.wood || "Wood"}: `;
-
-            document.getElementById("chopWoodBtn").textContent = "🪓 " + (t.chopBtn || "Chop Wood");
-            document.getElementById("drinkBtn").textContent = "🥤 " + (t.drinkBtn || "Drink Water");
-            document.getElementById("restBtn").textContent = "🛏️ " + (t.restBtn || "Rest");
-            document.getElementById("exploreBtn").textContent = "🧭 " + (t.exploreBtn || "Explore");
-
-            document.getElementById("labelDataSaver").textContent = t.dataSaverLabel || "Data Saver";
-            document.getElementById("labelLowGraphics").textContent = t.lowGraphicsLabel || "Low Graphics";
-
-            addToLog(t.loaded);
-        }
-
-        document.getElementById("languageSelector").addEventListener("change", (e) => {
-            setLanguage(e.target.value);
-        });
-
-        // Call setLanguage on load
-        window.onload = () => {
-            init();
-            setLanguage('en');
-        };
-    </script>
+  <script src="game.js"></script>
 </body>
 </html>

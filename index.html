@@ -1,7 +1,186 @@
-<div class="lobby">
-  <link rel="stylesheet" href="style.css">
-  <h1>IRL Among Us</h1>
-  <input type="text" id="gameCode" placeholder="Enter Game Code">
-  <button onclick="joinGame()">Join Game</button>
-  <button onclick="createGame()">Create Game</button>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRL Among Us</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+</head>
+<body>
+    <!-- LOBBY SCREEN -->
+    <div class="lobby" id="lobbyScreen">
+        <h1>IRL Among Us</h1>
+        <input type="text" id="gameCode" placeholder="Enter Game Code">
+        <button onclick="joinGame()">Join Game</button>
+        <button onclick="createGame()">Create Game</button>
+    </div>
+
+    <!-- WAITING LOBBY (AFTER JOINING) -->
+    <div id="waitingLobby" style="display: none;">
+        <h1>Game Code: <span id="displayGameCode">A1B2</span></h1>
+        <h2>Players:</h2>
+        <ul id="playerList"></ul>
+        <button id="startGameBtn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <!-- ROLE REVEAL (HIDDEN UNTIL GAME STARTS) -->
+    <div id="roleReveal">
+        <h1>Your Role:</h1>
+        <h2 id="roleText">IMPOSTOR</h2>
+        <p id="roleDescription">Sabotage & eliminate Crewmates!</p>
+        <button onclick="hideRole()">Continue</button>
+    </div>
+
+    <!-- GAME SCREEN (TASKS & EMERGENCY BUTTON) -->
+    <div id="gameScreen" style="display: none;">
+        <h1 id="gameStatus">Complete Tasks!</h1>
+        <div class="game-container">
+            <div class="task" onclick="completeTask('Fix Wiring')">
+                <h3>Fix Wiring</h3>
+                <p>Click when done!</p>
+            </div>
+            <div class="task" onclick="completeTask('Scan ID')">
+                <h3>Scan ID</h3>
+                <p>Hold for 3 seconds!</p>
+            </div>
+            <button id="emergencyBtn" onclick="callEmergency()">EMERGENCY MEETING</button>
+        </div>
+    </div>
+
+    <!-- VOTING SCREEN (POP-UP) -->
+    <div id="votingScreen">
+        <div class="voting-box">
+            <h1>Who is the Impostor?</h1>
+            <div class="player-to-vote" onclick="vote('Player1')">Player 1</div>
+            <div class="player-to-vote" onclick="vote('Player2')">Player 2</div>
+            <div class="player-to-vote" onclick="vote('Player3')">Player 3</div>
+            <button onclick="closeVoting()">Skip Vote</button>
+        </div>
+    </div>
+
+    <script>
+        // === FIREBASE SETUP ===
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.getDatabase();
+
+        // === GAME STATE ===
+        let gameCode = "";
+        let playerName = "Player" + Math.floor(Math.random() * 1000);
+        let isImpostor = false;
+
+        // === LOBBY FUNCTIONS ===
+        function createGame() {
+            gameCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+            sessionStorage.setItem("gameCode", gameCode);
+            firebase.ref(db, `games/${gameCode}`).set({
+                players: [playerName],
+                isStarted: false
+            });
+            switchScreen("waitingLobby");
+            document.getElementById("displayGameCode").textContent = gameCode;
+            updatePlayerList();
+        }
+
+        function joinGame() {
+            gameCode = document.getElementById("gameCode").value.toUpperCase();
+            firebase.onValue(firebase.ref(db, `games/${gameCode}`), (snapshot) => {
+                if (snapshot.exists()) {
+                    sessionStorage.setItem("gameCode", gameCode);
+                    const players = snapshot.val().players || [];
+                    if (!players.includes(playerName)) {
+                        players.push(playerName);
+                        firebase.set(firebase.ref(db, `games/${gameCode}/players`), players);
+                    }
+                    switchScreen("waitingLobby");
+                    document.getElementById("displayGameCode").textContent = gameCode;
+                    updatePlayerList();
+                } else {
+                    alert("Invalid game code!");
+                }
+            });
+        }
+
+        function updatePlayerList() {
+            firebase.onValue(firebase.ref(db, `games/${gameCode}/players`), (snapshot) => {
+                const players = snapshot.val() || [];
+                const playerList = document.getElementById("playerList");
+                playerList.innerHTML = "";
+                players.forEach(player => {
+                    const li = document.createElement("li");
+                    li.textContent = player;
+                    playerList.appendChild(li);
+                });
+            });
+        }
+
+        function startGame() {
+            const players = document.getElementById("playerList").children;
+            const impostorCount = Math.max(1, Math.floor(players.length / 3));
+            
+            // Assign roles randomly
+            const roles = {};
+            for (let i = 0; i < players.length; i++) {
+                roles[players[i].textContent] = i < impostorCount ? "IMPOSTOR" : "CREWMATE";
+            }
+            
+            // Save roles to Firebase
+            firebase.set(firebase.ref(db, `games/${gameCode}/roles`), roles);
+            firebase.set(firebase.ref(db, `games/${gameCode}/isStarted`), true);
+            
+            // Reveal role to player
+            revealRole(roles[playerName]);
+        }
+
+        // === GAME FUNCTIONS ===
+        function revealRole(role) {
+            isImpostor = (role === "IMPOSTOR");
+            document.getElementById("roleText").textContent = role;
+            document.getElementById("roleDescription").textContent = 
+                isImpostor ? "Sabotage & eliminate Crewmates!" : "Complete tasks & find the Impostor!";
+            switchScreen("roleReveal");
+        }
+
+        function hideRole() {
+            switchScreen("gameScreen");
+        }
+
+        function completeTask(taskName) {
+            if (isImpostor) return; // Impostors can't do tasks!
+            alert(`Task "${taskName}" completed!`);
+            // Add Firebase task tracking here
+        }
+
+        function callEmergency() {
+            document.getElementById("votingScreen").style.display = "flex";
+        }
+
+        function vote(player) {
+            alert(`Voted to eject ${player}!`);
+            closeVoting();
+        }
+
+        function closeVoting() {
+            document.getElementById("votingScreen").style.display = "none";
+        }
+
+        // === HELPER FUNCTIONS ===
+        function switchScreen(screenId) {
+            document.getElementById("lobbyScreen").style.display = "none";
+            document.getElementById("waitingLobby").style.display = "none";
+            document.getElementById("gameScreen").style.display = "none";
+            document.getElementById(screenId).style.display = "block";
+        }
+    </script>
+</body>
+</html>
